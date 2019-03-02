@@ -1,0 +1,136 @@
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+using namespace cv;
+using namespace std;
+
+Mat src; 
+Mat src_gray;
+
+int main() {
+	Mat src = imread("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena.bmp",0);
+	Mat src_elain = imread("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain.bmp", 0);
+
+//***********************************************灰度调节********************************************************//
+	                                
+	imshow("灰度8", src);
+	Mat image_7 = src.clone();
+	Mat image_6 = src.clone();
+	Mat image_5 = src.clone();
+	Mat image_4 = src.clone();
+	Mat image_3 = src.clone();
+	Mat image_2 = src.clone();
+	Mat image_1 = src.clone();
+	for (int x = 0; x < src.cols; x++) {
+		for (int y = 0; y < src.rows; y++) {
+			image_1.at<uchar>(x, y) = int(image_1.at<uchar>(x, y) / 128) * 128;
+			image_2.at<uchar>(x, y) = int(image_2.at<uchar>(x, y) / 64) * 64;
+			image_3.at<uchar>(x, y) = int(image_3.at<uchar>(x, y) / 32) * 32;
+			image_4.at<uchar>(x, y) = int(image_4.at<uchar>(x, y) / 16) * 16;
+			image_5.at<uchar>(x, y) = int(image_5.at<uchar>(x, y) / 8) * 8;
+			image_6.at<uchar>(x, y) = int(image_6.at<uchar>(x, y) / 4) * 4;
+			image_7.at<uchar>(x, y) = int(image_7.at<uchar>(x, y) / 2) * 2;
+		}
+	}
+	
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度1.bmp", image_1);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度2.bmp", image_2);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度3.bmp", image_3);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度4.bmp", image_4);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度5.bmp", image_5);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度6.bmp", image_6);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\灰度7.bmp", image_7);
+
+
+//***********************************************计算均值方差********************************************************//
+
+	Mat tmp_m, tmp_sd;
+	double m = 0, sd = 0;
+	meanStdDev(src, tmp_m, tmp_sd);
+	m = tmp_m.at<double>(0, 0);
+	sd = tmp_sd.at<double>(0, 0);
+	cout << "均值: " << m << " , 方差: " << sd*sd << endl;
+
+
+//***********************************************lena三种插值到2048*2048********************************************************//
+	Mat image_nn = src.clone();
+	Mat image_linear = src.clone();
+	Mat image_cubic = src.clone();
+	resize(image_nn, image_nn, Size(2048, 2048), CV_INTER_NN);
+	resize(image_linear, image_linear, Size(2048, 2048), CV_INTER_LINEAR);
+	resize(image_cubic, image_cubic, Size(2048, 2048), CV_INTER_CUBIC);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\近邻插值.bmp", image_nn);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\双线性插值.bmp", image_linear);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\双三次插值.bmp", image_cubic);
+
+//***********************************************lena和elain以1.5为参数shear变化********************************************************//
+
+	float turn_mat[6] = { 1, 0, 0, 1.5, 1, 0};
+	Mat shear_mat;
+	shear_mat = Mat(2, 3, CV_32FC1, turn_mat);
+	Mat elain_shear = src_elain.clone();
+	Mat lena_shear = src.clone();
+	resize(elain_shear, elain_shear, Size(512, 1280));
+	resize(lena_shear, lena_shear, Size(512, 1280));
+
+	warpAffine(src_elain, elain_shear, shear_mat, elain_shear.size());
+	warpAffine(src, lena_shear, shear_mat, lena_shear.size());
+
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain_shear变换.bmp", elain_shear);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena_shear变换.bmp", lena_shear);
+
+	Mat elain_shear_nn, elain_shear_linear, elain_shear_cubic;
+	resize(elain_shear, elain_shear_nn, Size(2048, 2048), CV_INTER_NN);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain_shear近邻插值.bmp", elain_shear_nn);
+	resize(elain_shear, elain_shear_linear, Size(2048, 2048), CV_INTER_LINEAR);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain_shear双线性插值.bmp", elain_shear_linear);
+	resize(elain_shear, elain_shear_cubic, Size(2048, 2048), CV_INTER_CUBIC);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain_shear双三次插值.bmp", elain_shear_cubic);
+
+	Mat lena_shear_nn, lena_shear_linear, lena_shear_cubic;
+	resize(lena_shear, lena_shear_nn, Size(2048, 2048), CV_INTER_NN);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena_shear近邻插值.bmp", lena_shear_nn);
+	resize(lena_shear, lena_shear_linear, Size(2048, 2048), CV_INTER_LINEAR);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena_shear双线性插值.bmp", lena_shear_linear);
+	resize(lena_shear, lena_shear_cubic, Size(2048, 2048), CV_INTER_CUBIC);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena_shear双三次插值.bmp", lena_shear_cubic);
+
+//***********************************************lena和elain旋转30度********************************************************//
+	float turn_mat_ro[6] = { 0.866, -0.5, 255.0, 0.5, 0.866, 0};
+	Mat ro_mat;
+	ro_mat = Mat(2, 3, CV_32FC1, turn_mat_ro);
+	Mat elain_ro = src_elain.clone();
+	Mat lena_ro = src.clone();
+	resize(elain_ro, elain_ro, Size(700, 700));
+	resize(lena_ro, lena_ro, Size(700, 700));
+
+	warpAffine(src_elain, elain_ro, ro_mat, elain_ro.size());
+	warpAffine(src, lena_ro, ro_mat, lena_ro.size());
+
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain旋转变换.bmp", elain_ro);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena旋转变换.bmp", lena_ro);
+
+	Mat elain_ro_nn, elain_ro_linear, elain_ro_cubic;
+	resize(elain_ro, elain_ro_nn, Size(2048, 2048), CV_INTER_NN);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain旋转近邻插值.bmp", elain_ro_nn);
+	resize(elain_ro, elain_ro_linear, Size(2048, 2048), CV_INTER_LINEAR);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain旋转双线性插值.bmp", elain_ro_linear);
+	resize(elain_ro, elain_ro_cubic, Size(2048, 2048), CV_INTER_CUBIC);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\elain旋转双三次插值.bmp", elain_ro_cubic);
+
+	Mat lena_ro_nn, lena_ro_linear, lena_ro_cubic;
+	resize(lena_ro, lena_ro_nn, Size(2048, 2048), CV_INTER_NN);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena旋转近邻插值.bmp", lena_ro_nn);
+	resize(lena_ro, lena_ro_linear, Size(2048, 2048), CV_INTER_LINEAR);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena旋转双线性插值.bmp", lena_ro_linear);
+	resize(lena_ro, lena_ro_cubic, Size(2048, 2048), CV_INTER_CUBIC);
+	imwrite("C:\\Users\\thinkpad\\Desktop\\第一次作业\\第二次作业\\lena旋转双三次插值.bmp", lena_ro_cubic);
+	
+	waitKey(0);
+	return 0;
+}
